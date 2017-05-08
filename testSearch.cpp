@@ -1,3 +1,13 @@
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <stdlib.h>
+#include <sys/stat.h>
+#include <utility>
+// Include stemming stuff
+#include "english_stem.h"
+
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -18,12 +28,15 @@ struct Pair{
 void ProcessDirectory(string directory, vector<string>& bookDirec);
 void ProcessEntity(struct dirent* entity, vector<string>& bookDirec);
 void StopWordMap(ifstream& infile, map<string, bool>& stopwords);
-void oneBookMap(string filePath,int ithbook, map<string, vector<Pair> > &refs, map<string, bool> stopwords);
+void oneMap(vector<string> bookDir, map<string, vector <Pair> >& refs, map<string,bool> stopwords, int & limit, int index);
 
 void ProcessFile(string file,string word);
 
 bool hasEnding (string const &fullString, string const &ending);
 string getNext(string & line);
+
+void writeBinary();
+void openFile(string fileName);
 
 string path = "/home/skon/books";
 int fileCount = 0;
@@ -44,23 +57,30 @@ int main()
   
   StopWordMap(infile, stopwords);
   
-  cout << "Word to search for: ";
+  cout << "Choose Word to search for: ";
   cin >> word;
   // Convert to lower case
   transform(word.begin(), word.end(), word.begin(), ::tolower);
+cout<< "here"<<endl;
   ProcessDirectory(directory,bookDirec);
+  cout<< "here"<<endl;
   //cout << "The word \"" << word << "\" found " << matchCount << " times in " << fileMatchCount << " books and " << wordCount << " words" << endl; 
   //cout << "Total Books:" << fileCount << endl;
   
+   
   for (int i=0; i<1; i++)
   {
       oneBookMap(bookDirec[i],i,refs,stopwords);
   }
   
   vector<Pair> pairsofint;
+  //vector<int> wordpos;
   pairsofint=refs.at(word);
   cout<<pairsofint[0].bookIndex<<endl;
-  cout<<pairsofint[1].position<<endl;
+  cout<<pairsofint[0].position<<endl;
+  //wordpos=pairsofint[0].positions;
+  //cout<< wordpos[0]<<endl;
+
   
   return 0;
 }
@@ -84,7 +104,7 @@ void ProcessDirectory(string directory, vector<string>& bookDirec)
   //set the new path for the content of the directory
   path = dirToOpen + "/";
 
-  //  cout << "Process directory: " << dirToOpen.c_str() << endl;
+    //cout << "Process directory: " << dirToOpen.c_str() << endl;
 
   if(NULL == dir)
     {
@@ -133,26 +153,7 @@ void ProcessEntity(struct dirent* entity, vector<string>& bookDirec)
   cout << "Not a file or directory: " << entity->d_name << endl;
 }
 
-void buildIndex(vector<string> bookDirec, map<string, vector<Pair> > &refs)
-{
-	ifstream infile;
-	int pos=infile.tellg();
-	Pair index;
-	string word="car";
-	
-		infile.open(bookDirec[0].c_str());
-		
-		index.bookIndex=0;
-		
-		while(!infile.eof()){
-		index.position=infile.tellg();
-		cout<<infile.tellg()<<"line number"<<endl;
-		infile >> word;
-		refs[word].push_back(index);
-		cout << word<< endl;
-		//cout<<refs[word][0]<<endl;
-	}
-}
+
 
 
 void StopWordMap(ifstream& infile, map<string, bool> &stopwords)
@@ -214,14 +215,21 @@ string getNext(string & line) {
   return next;;
 }
 
-void oneBookMap(string filePath,int ithbook, map<string, vector <Pair> >& refs, map<string,bool> stopwords) {
+void oneMap(vector<string> bookDir, map<string, vector <Pair> >& refs, map<string,bool> stopwords, int & limit, int& Index) {
   
   ifstream infile;
   int count = 0, pos;
-  string line,w;
+  string line,w,filePath;
   Pair index;
+  vector<int> temppos;
   
-  index.bookIndex=ithbook;
+  stemming::english_stem<char, std::char_traits<char> > StemEnglish;
+  
+  
+  for (int i=0;count<25000000;i++) {
+  
+  index.bookIndex=i;
+  filePath=bookDir[i];
   
   try{
   
@@ -234,14 +242,26 @@ void oneBookMap(string filePath,int ithbook, map<string, vector <Pair> >& refs, 
       while (line.length()>0) 
       {
 	   w = getNext(line);
+	   
+	   count++;
+	   if (count==25,000,000){
+	   Index=i;
+	   limit=infile.tellg();
+	   line.length()=0;
+	   infile.eof();
+	   }
+	   else{
 	   transform(w.begin(), w.end(), w.begin(), ::tolower);
 	   //cout << "*" << w << "*";
-	   wordCount++;
-	   if (stopwords.find(w)==stopwords.end())
-	   {
+	   StemEnglish(w);
+	   
+	   if (stopwords.find(w)==stopwords.end()){
+	   		//temppos=index.positions;
+	   		//temppos.push_back(infile.tellg());
 	   		index.position=infile.tellg();
 	   		cout<<infile.tellg()<<"is line number of the word "<<w<<endl;
 	   		refs[w].push_back(index);
+	   		}
 	   }
       }
     getline(infile,line);
@@ -252,5 +272,30 @@ void oneBookMap(string filePath,int ithbook, map<string, vector <Pair> >& refs, 
   }catch(ifstream::failure e){
     //cout<<e<<endl;
   }
-  
+  }
 }
+
+void writeBinary() {
+
+for(map<string,vector <Pair> >::iterator it = refs.begin(); it != refs.end(); it++) {
+for (vector<Pair>::iterator vecIt = it.second.begin(); vecIt !=second.end(); vecIt++) {
+String fileName = “wordFiles/”+ it.first + “.txt”;
+openFile(fileName);
+char buffer[100];
+	ofstream outfile (fileName, ios::out | ios::binary);
+	outfile.write (buffer, 100);
+}
+}
+return;
+}
+
+
+void openFile(string fileName) {
+fileName.open(filename, std::fstream::in | std::fstream::out | std::fstream::app);
+if (!fileName) {
+fileName.open(filename, std::fstream::in | std::fstream::out | std::fstream::trunc);
+}
+return;
+}
+
+
