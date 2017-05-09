@@ -1,3 +1,4 @@
+#define _GLIBCXX_USE_CXX11_ABI 0
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
@@ -10,7 +11,6 @@
 
 #include <iostream>
 #include <fstream>
-#include <sstream>
 #include <string>
 #include <vector>
 #include <dirent.h>
@@ -28,7 +28,7 @@ struct Pair{
 void ProcessDirectory(string directory, vector<string>& bookDirec);
 void ProcessEntity(struct dirent* entity, vector<string>& bookDirec);
 void StopWordMap(ifstream& infile, map<string, bool>& stopwords);
-void oneMap(vector<string> bookDir, map<string, vector <Pair> >& refs, map<string,bool> stopwords, int & limit, int index);
+void oneMap(vector<string> bookDir, map<string, vector <Pair> >& refs, map<string,bool> stopwords, int& limit, int& fileIndex);
 
 void ProcessFile(string file,string word);
 
@@ -36,53 +36,108 @@ bool hasEnding (string const &fullString, string const &ending);
 string getNext(string & line);
 
 void writeBinary();
-void openFile(string fileName);
+//void openFile(string fileName, string outfile);
 
-string path = "/home/skon/books";
+Pair getBookLine(string word);
+string getWordLine(Pair outpair);
+
+
 int fileCount = 0;
 int matchCount = 0;
 int fileMatchCount = 0;
 long long wordCount = 0;
 string delimiters = " ,.;:?'\"()[]";
-
-int main()
-{
-  
   map<string,vector <Pair> > refs;
   map<string,bool> stopwords;
   vector<string> bookDirec;
+string path = "/home/skon/books";
+
+int main()
+{
+vector<Pair> pairsofint;
+int limit = 0;
+int fileIndex = 0;
   string word;
   string directory = "";
   ifstream infile;
   
   StopWordMap(infile, stopwords);
   
+
+//cout<< "here"<<endl;
+  ProcessDirectory(directory,bookDirec);
+ // cout<< "here"<<endl;
+  //cout << "The word \"" << word << "\" found " << matchCount << " times in " << fileMatchCount << " books and " << wordCount << " words" << endl; 
+  //cout << "Total Books:" << fileCount << endl;
+  
+
+   
+  //for (int i=0; i<1; i++)
+  //{
+      oneMap(bookDirec,refs,stopwords,limit,fileIndex);
+  //}  
   cout << "Choose Word to search for: ";
   cin >> word;
   // Convert to lower case
   transform(word.begin(), word.end(), word.begin(), ::tolower);
-cout<< "here"<<endl;
-  ProcessDirectory(directory,bookDirec);
-  cout<< "here"<<endl;
-  //cout << "The word \"" << word << "\" found " << matchCount << " times in " << fileMatchCount << " books and " << wordCount << " words" << endl; 
-  //cout << "Total Books:" << fileCount << endl;
-  
-   
-  for (int i=0; i<1; i++)
-  {
-      oneBookMap(bookDirec[i],i,refs,stopwords);
-  }
-  
-  vector<Pair> pairsofint;
+
   //vector<int> wordpos;
   pairsofint=refs.at(word);
   cout<<pairsofint[0].bookIndex<<endl;
   cout<<pairsofint[0].position<<endl;
+cout << bookDirec[pairsofint[0].bookIndex]<<endl;
   //wordpos=pairsofint[0].positions;
   //cout<< wordpos[0]<<endl;
-
-  
+//fstream testfile(bookDirec[pairsofint[0].bookIndex])
+//GotoLine(bookDirec[pairsofint[0].bookIndex], pairsofint[0].position);
+//string testline;
+//testfile >> testline;
+//cout << testline << endl;
+Pair outpair = getBookLine(word);
+cout << outpair.position << endl;
+cout << outpair.bookIndex << endl;
+cout << getWordLine(outpair) << endl;
+  cout << "DONE!" << endl;
   return 0;
+}
+
+//returns line of word in the book
+string getWordLine(Pair outpair) {
+cout << "started getWordLine" << endl;
+cout << bookDirec[outpair.bookIndex] << endl;
+string bookpath = bookDirec[outpair.bookIndex];
+cout << "bookpath: " << bookpath << endl;
+int linepos = outpair.position;
+ifstream lineout;
+lineout.open(bookpath.c_str());
+cout << "opened lineout" << endl;
+char output[100];
+lineout >> output;
+string finalOutput = output;
+return finalOutput;
+}
+
+//finds pair for the word
+Pair getBookLine(string word) {
+
+
+Pair tempLinePair;
+//char pathbuffer[4];
+string wordFileName = "/wordfiles/" + word + ".txt";
+ifstream wordbinary(wordFileName.c_str(), ios::in | ios::binary);
+wordbinary.read(reinterpret_cast<char *>(&tempLinePair), sizeof(tempLinePair));
+
+//char posbuffer[4];
+//string wordFilePos = "/wordfiles/" + word + ".txt";
+//wordbinary(wordFileName.c_str(), ios::in | ios::binary);
+//wordbinary.read(tempLinePair.position, 4);
+
+//tempLinePair.position= posbuffer;
+//tempLinePair.bookIndex = pathbuffer;
+
+cout << "Templinepair position: " << tempLinePair.position << " path : " << tempLinePair.bookIndex << endl; 
+return tempLinePair;
+
 }
 
 
@@ -104,7 +159,7 @@ void ProcessDirectory(string directory, vector<string>& bookDirec)
   //set the new path for the content of the directory
   path = dirToOpen + "/";
 
-    //cout << "Process directory: " << dirToOpen.c_str() << endl;
+     cout << "Process directory: " << dirToOpen.c_str() << endl;
 
   if(NULL == dir)
     {
@@ -177,12 +232,12 @@ void StopWordMap(ifstream& infile, map<string, bool> &stopwords)
   if (hasEnding(file,fileType)) {
       fileCount++;
       if (word.length()>0) {
-	int matches = stringMatchCount(file,word);
+	int matches = stringMatchCount(fionle,word);
 	if (matches > 0) {
 	  fileMatchCount++;
 	  matchCount += matches;
 	  cout << "   " << path << file;
-	  cout << " " << matches << endl;;
+	  cout << " " << matches << endl;
 	}
       }
   }
@@ -215,7 +270,7 @@ string getNext(string & line) {
   return next;;
 }
 
-void oneMap(vector<string> bookDir, map<string, vector <Pair> >& refs, map<string,bool> stopwords, int & limit, int& Index) {
+void oneMap(vector<string> bookDir, map<string, vector <Pair> >& refs, map<string,bool> stopwords, int& limit, int& fileIndex) {
   
   ifstream infile;
   int count = 0, pos;
@@ -226,7 +281,7 @@ void oneMap(vector<string> bookDir, map<string, vector <Pair> >& refs, map<strin
   stemming::english_stem<char, std::char_traits<char> > StemEnglish;
   
   
-  for (int i=0;count<25000000;i++) {
+  for (int i=0;count<2500;i++) {
   
   index.bookIndex=i;
   filePath=bookDir[i];
@@ -244,11 +299,14 @@ void oneMap(vector<string> bookDir, map<string, vector <Pair> >& refs, map<strin
 	   w = getNext(line);
 	   
 	   count++;
-	   if (count==25,000,000){
-	   Index=i;
+	   if (count==2500){
+cout << "found first 25,000,000 words" << endl;
+	   fileIndex=i;
 	   limit=infile.tellg();
-	   line.length()=0;
 	   infile.eof();
+	   writeBinary();
+	   return; 
+
 	   }
 	   else{
 	   transform(w.begin(), w.end(), w.begin(), ::tolower);
@@ -256,10 +314,12 @@ void oneMap(vector<string> bookDir, map<string, vector <Pair> >& refs, map<strin
 	   StemEnglish(w);
 	   
 	   if (stopwords.find(w)==stopwords.end()){
+			if (w.length()<1) break;
 	   		//temppos=index.positions;
 	   		//temppos.push_back(infile.tellg());
 	   		index.position=infile.tellg();
-	   		cout<<infile.tellg()<<"is line number of the word "<<w<<endl;
+
+	   		cout<<infile.tellg()<<" is line number of the word "<< w << " word number: " << count <<endl;
 	   		refs[w].push_back(index);
 	   		}
 	   }
@@ -270,32 +330,39 @@ void oneMap(vector<string> bookDir, map<string, vector <Pair> >& refs, map<strin
 
     infile.close();
   }catch(ifstream::failure e){
+cout << "failed" << endl;
     //cout<<e<<endl;
   }
   }
 }
 
 void writeBinary() {
-
+int itCount = 0;
+cout << "write binary started";
 for(map<string,vector <Pair> >::iterator it = refs.begin(); it != refs.end(); it++) {
-for (vector<Pair>::iterator vecIt = it.second.begin(); vecIt !=second.end(); vecIt++) {
-String fileName = “wordFiles/”+ it.first + “.txt”;
-openFile(fileName);
-char buffer[100];
-	ofstream outfile (fileName, ios::out | ios::binary);
-	outfile.write (buffer, 100);
+for (vector<Pair>::iterator vecIt = it->second.begin(); vecIt != it->second.end(); vecIt++) {
+string fileName = "wordfiles/" + it->first + ".txt";
+//openFile(fileName, "outfile");
+cout << "Writing binary for " << it->first << "    Count: " << itCount << endl;
+Pair tempPair = it->second[0];
+int pairpos = tempPair.position; 
+int pairpath = tempPair.bookIndex;
+ofstream outfile(fileName.c_str(), ios::out | ios::binary);
+outfile.write (reinterpret_cast<const char *>(&pairpath), sizeof(pairpath));
+outfile.write (reinterpret_cast<const char *>(&pairpos), sizeof(pairpath));
+itCount++;
 }
 }
 return;
 }
 
 
-void openFile(string fileName) {
-fileName.open(filename, std::fstream::in | std::fstream::out | std::fstream::app);
-if (!fileName) {
-fileName.open(filename, std::fstream::in | std::fstream::out | std::fstream::trunc);
-}
-return;
-}
+//void openFile(string fileName, string outfile) {
+//.outfile.open(fileName, std::fstream::in | std::fstream::out | std::fstream::app);
+//if (!fileName) {
+//outfile.open(fileName, std::fstream::in | std::fstream::out | std::fstream::trunc);
+//}
+//return;
+//}
 
 
