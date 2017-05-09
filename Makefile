@@ -1,4 +1,4 @@
-#MakeFile to build and deploy SearchBooks
+#MakeFile to build and deploy the Sample US CENSUS Name Data using ajax
 # For CSC3004 Software Development
 
 # Put your user name below:
@@ -9,39 +9,41 @@ CC= g++
 #For Optimization
 #CFLAGS= -O2
 #For debugging
-CFLAGS= -std=c++11
+CFLAGS= -g
 
 RM= /bin/rm -f
 
-all: SearchBooks PutCGI PutHTML
+all: SearchBooks SearchBooks PutCGI PutHTML
+#all: SearchBooks 
 
-SearchBooks.o: SearchBooks.cpp 
+
+SearchBooks.o: SearchBooks.cpp fifo.h BookDirec.h
 	$(CC) -c $(CFLAGS) SearchBooks.cpp
 
-SearchBooks: SearchBooks.o
-	$(CC) $(CFLAGS) SearchBooks.o -o SearchBooks -L/usr/local/lib -lcgicc
+SearchAjax.o: SearchAjax.cpp fifo.h 
+	$(CC) -c $(CFLAGS) SearchAjax.cpp
 
-testSearch.o: testSearch.cpp 
-	$(CC) -c testSearch.cpp 
+SearchBooks: SearchBooks.o fifo.o
+	$(CC) SearchBooks.o  fifo.o -o SearchBooks
 
-testSearch: testSearch.o 
-	$(CC) testSearch.o -o testSearch 
+fifo.o:		fifo.cpp fifo.h
+		g++ -c fifo.cpp
+SearchAjax: SearchAjax.o  fifo.h
+	$(CC) SearchAjax.o  fifo.o -o SearchAjax -L/usr/local/lib -lcgicc
 
-PutCGI: SearchBooks
-	chmod 757 SearchBooks
-	cp SearchBooks /usr/lib/cgi-bin/$(USER)_SearchBooks.cgi 
+PutCGI: SearchAjax
+	chmod 757 SearchAjax
+	cp SearchAjax /usr/lib/cgi-bin/$(USER)_SearchBooks.cgi 
 
 	echo "Current contents of your cgi-bin directory: "
 	ls -l /usr/lib/cgi-bin/
 
 PutHTML:
-	cp SearchBooks.html /var/www/html/class/softdev/$(USER)
-	cp SearchBooks.js /var/www/html/class/softdev/$(USER)
-	cp SearchBooks.css /var/www/html/class/softdev/$(USER)
-	cp gears.gif /var/www/html/class/softdev/$(USER)
+	cp shake_ajax.html /var/www/html/class/softdev/$(USER)
+	cp shake_ajax.css /var/www/html/class/softdev/$(USER)
 
 	echo "Current contents of your HTML directory: "
 	ls -l /var/www/html/class/softdev/$(USER)
 
 clean:
-	rm -f *.o SearchBooks testSearch
+	rm -f *.o shake_ajax shakeserver testclient

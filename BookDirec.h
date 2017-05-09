@@ -24,8 +24,8 @@ using namespace std;
 
 
 struct Pair{
-	int bookIndex;
-	int position;
+	unsigned int bookIndex;
+	unsigned int position;
 };
 
 
