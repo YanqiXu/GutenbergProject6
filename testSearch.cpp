@@ -82,7 +82,10 @@ int fileIndex = 0;
   transform(word.begin(), word.end(), word.begin(), ::tolower);
 
   //vector<int> wordpos;
+cout << "right before refs.at(word) " << endl;
+cout << word << endl;
   pairsofint=refs.at(word);
+cout << "right after " << endl;
   cout<<pairsofint[0].bookIndex<<endl;
   cout<<pairsofint[0].position<<endl;
 cout << bookDirec[pairsofint[0].bookIndex]<<endl;
@@ -281,7 +284,7 @@ void oneMap(vector<string> bookDir, map<string, vector <Pair> >& refs, map<strin
   stemming::english_stem<char, std::char_traits<char> > StemEnglish;
   
   
-  for (int i=0;count<2500;i++) {
+  for (int i=0;i<2500;i++) {
   
   index.bookIndex=i;
   filePath=bookDir[i];
@@ -295,16 +298,17 @@ void oneMap(vector<string> bookDir, map<string, vector <Pair> >& refs, map<strin
     while(!infile.eof()){
       // normalize to lower case
       while (line.length()>0) 
-      {
+      { 
 	   w = getNext(line);
 	   
 	   count++;
-	   if (count==2500){
+	   if (count==2500000){
 cout << "found first 25,000,000 words" << endl;
 	   fileIndex=i;
 	   limit=infile.tellg();
 	   infile.eof();
 	   writeBinary();
+cout << "i= " << i << endl;
 	   return; 
 
 	   }
@@ -319,7 +323,8 @@ cout << "found first 25,000,000 words" << endl;
 	   		//temppos.push_back(infile.tellg());
 	   		index.position=infile.tellg();
 
-	   		cout<<infile.tellg()<<" is line number of the word "<< w << " word number: " << count <<endl;
+	   		cout<<infile.tellg()<<" is line number of the word "<< w << " word number: " << count << " should = " << i <<endl;
+cout << "Position of index = " << index.position << " path = " << index.bookIndex << endl;
 	   		refs[w].push_back(index);
 	   		}
 	   }
