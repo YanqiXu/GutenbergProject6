@@ -116,6 +116,7 @@ void oneMap(vector<string> bookDir, map<string, vector<Pair> >& refs, map<string
         getline(infile, line);
         cout << "**" << line << endl;
 
+		index.position = infile.tellg();
         index.bookIndex = fileIndex;
         cout << filePath << "Here" << endl;
         try {
@@ -135,7 +136,7 @@ void oneMap(vector<string> bookDir, map<string, vector<Pair> >& refs, map<string
                         StemEnglish(w);
                         //temppos=index.positions;
                         //temppos.push_back(infile.tellg());
-                        index.position = infile.tellg();
+                        
 
                         cout<<infile.tellg()<<" is line number of the word "<< w << " word number: " << count << endl;
                         //cout << "Position of index = " << index.position << " path = " << index.bookIndex << endl;
@@ -202,5 +203,3 @@ void writeBinary()
 //}
 //return;
 //}
-
-

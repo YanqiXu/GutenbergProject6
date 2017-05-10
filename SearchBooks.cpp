@@ -108,4 +108,3 @@ sendfifo.send(outMessage);
 cout << outMessage << endl;
 
 }
-

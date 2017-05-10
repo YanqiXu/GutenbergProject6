@@ -1,6 +1,6 @@
 <HTML>
 <HEAD>
-<TITLE>Software Development - Shakespeare Search Program</TITLE>
+<TITLE>Software Development - Gutenburg Search Program</TITLE>
 <META AUTHOR="Jim Skon & Yanqi Xu">
 </HEAD>
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
@@ -8,7 +8,7 @@
 <head>
   <!-- $Id: name_stats_ajax.html,v 1.6 skon Exp $ -->
 <link rel="stylesheet" type="text/css" href="name_stats_ajax.css">
-  <title>GNU cgicc Shakespeare Search Form</title>
+  <title>GNU cgicc Gutenburg Search Form</title>
 </head>
 
 <script type = "text/javascript">
@@ -45,7 +45,7 @@ function getresponse () {
      var word = document.getElementById('word').value;		     
      if (word.length < 1) return;
 
-    XMLHttp.open("GET", "/cgi-bin/xuy_shakefetchajax.cgi?"
+    XMLHttp.open("GET", "/cgi-bin/xuy_SearchAjax.cgi?"
 						  
 						 + "&word=" + word
 						 ,true);
@@ -59,19 +59,19 @@ function getresponse () {
 </script>
 
 <BODY>
-<H1>Software Development - Shakespeare Search Program</H1>
+<H1>Software Development - Gutenburg Search Program</H1>
 <P>This program is designed to demonstrate a simple search program. 
 A server program runs in the background, waiting for word requests.  When it receives a word request
 it returns the matching data.
 <P>  The reason for such a architecture is to allow a simple program, with a MAP preloaded with data,
 to quickly provide results without incurring the overhead of a reloading the books and all the sentences containing
 the word for each request. 
-<br> (Revised by Yanqi Xu)
+<br> 
 
 
 
 <P>
-Welcome to the complete work of Shakespeare!
+Welcome!
 
 
 
